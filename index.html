@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Spin the Wheel</title>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/css/bootstrap.min.css"
+            integrity="sha512-P5MgMn1jBN01asBgU0z60Qk4QxiXo86+wlFahKrsQf37c9cro517WzVSPPV1tDKzhku2iJ2FVgL67wG03SGnNA=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        />
+        <link rel="stylesheet" href="/assets/sass/style.css" />
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="mainbox">
+                        <canvas 
+                            id="canvas"
+                            width="500"
+                            height="500"
+                            data-responsiveMinWidth="180"
+                            data-responsiveScaleHeight="true"
+                            data-responsiveMargin="50"
+                        >
+                            <p style="color: white">
+                                Sorry, your browser doesn't support canvas.
+                                Please try another.
+                            </p>
+                        </canvas>
+                        <div class="spin">
+                            <a href="#" onclick="startSpin()" class="inner-spin">SPIN</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <form class="mt-3" id="formInfo">
+                        <div class="form-group">
+                            <label for="award">Tên giải thưởng</label>
+                            <input type="text" class="form-control" id="award">    
+                        </div>
+                        <div class="form-group">
+                            <label for="percent">Xác xuất trúng thưởng (%)</label>
+                            <input type="text" class="form-control" id="percent">
+                        </div>
+                        <div class="form-group">
+                            <label for="bgColor">Màu nền</label>
+                            <input type="color" id="bgColor">
+                        </div>
+                        <button type="submit" onclick="addSegment()" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+            integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        ></script>
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.min.js"
+            integrity="sha512-XKa9Hemdy1Ui3KSGgJdgMyYlUg1gM+QhL6cnlyTe2qzMCYm4nAZ1PsVerQzTTXzonUR+dmswHqgJPuwCq1MaAg=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        ></script>
+        <script src="/assets/js/Winwheel.min.js"></script>
+        <script src="/assets/js/TweenMax.min.js"></script>
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.4/sweetalert2.all.min.js"
+            integrity="sha512-hDt6c6JA9ytE/b7OF73Bhj1lXT0wucQXm9yKjSV7BrJ6o5CVs1hq7nIQWU4OhOyrUbbL1KhN7Jt00v7UZA18og=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        ></script>
+        <script>
+            const gift = [];
+            const dataUser = [];
+            let spinNumber;
+            
+            function addSegment() {
+                let award = $('#award').val();
+                let percent = winwheelPercentToDegrees($('#percent').val());
+                let bgColor = $('#bgColor').val();
+
+                if (percent === 0) {
+                    theWheel.addSegment({
+                        'text' : award,
+                        'fillStyle' : bgColor
+                    }, 1)
+                }
+                else {
+                    theWheel.addSegment({
+                        'text' : award,
+                        'fillStyle' : bgColor,
+                        'size' : percent
+                    }, 1);
+                }
+                
+                theWheel.draw();
+            }
+
+            const theWheel = new Winwheel({
+                numSegments: gift.length,
+                segments: gift,
+                outerRadius: 250,
+                textFontSize: 18,
+                responsive: true,
+                animation: {
+                    type: "spinToStop",
+                    duration: 5,
+                    spins: 15,
+                    callbackSound: playSound,
+                    callbackFinished: alertPrize,
+                }
+            });
+
+            let ding = new Audio("/assets/sound/ding.mp3");
+            let applause = new Audio("/assets/sound/applause.mp3");
+            
+            function playSound() {
+                ding.pause();
+                ding.currentTime = 0;
+                ding.play();
+            }
+
+            let wheelSpinning = false;
+
+            function StatusButton(status) {
+                if (status == 1) {
+                    document
+                        .querySelector(".inner-spin")
+                        .removeAttribute("disabled");
+                } else if (status == 2) {
+                    document
+                        .querySelector(".inner-spin")
+                        .setAttribute("disabled", false);
+                    spinNumber = 1;
+                    
+                    const d = new Date();
+                    d.setTime(d.getTime() + 24 * 3600 * 1000);
+                    let expires = "expires= " + d.toUTCString();
+                    document.cookie = "spinNumber= " + spinNumber + ";" + expires + ";path=/";
+                } else if (status == 3) {
+                    document
+                        .querySelector(".inner-spin")
+                        .removeAttribute("disabled");
+
+                    theWheel.stopAnimation(false);
+                    theWheel.rotationAngle = 0;
+                    theWheel.draw();
+
+                    wheelSpinning = false;
+                }
+            }
+            StatusButton(1);
+
+            function startSpin() {
+                let cSpinNumber = getCookie("spinNumber");
+                if (cSpinNumber != "") {
+                    Swal.fire({
+                        icon: 'error',
+                        text: 'Số lượt quay trong ngày đã hết!!'
+                    })
+                } else if (dataUser == "") {
+                    Swal.fire({
+                        title: "Mời bạn nhập thông tin",
+                        html: "",
+                        confirmButtonText: "Xác nhận",
+                        confirmButtonColor: "#28a745",
+                        showCancelButton: true,
+                        cancelButtonText: "Đóng",
+                        cancelButtonColor: "#d33",
+                        html: `<form action="">
+                                    <input class="form-control my-3 mx-auto" type="text" id="fullname" placeholder="Họ và tên">
+                                    <input class="form-control my-3 mx-auto" type="text" id="phone" placeholder="Số điện thoại">
+                                </form>`,
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            var fullName = $("#fullname").val();
+                            var phone = $("#phone").val();
+                            
+                            const today = new Date();
+                            today.setTime(today.getTime() + 30 * 24 * 3600 * 1000);
+                            let expires2 = "expires= " + today.toUTCString();
+                            document.cookie = "phone= " + phone + ";" + expires2 + ";path=/";
+                            if (fullName == "" || phone == "") {
+                                Swal.fire({
+                                    icon: "warning",
+                                    text: "Vui lòng nhập đủ thông tin",
+                                });
+                            } else {
+                                dataUser.push({ fullName, phone });
+                            }
+                        }
+                    });
+                } else if (wheelSpinning == false) {
+                    StatusButton(1);
+                    theWheel.startAnimation();
+                    wheelSpinning = true;
+                    StatusButton(2);
+                }
+            }
+
+            function alertPrize() {
+                applause.play();
+                let winningSegment = theWheel.getIndicatedSegment();
+                Swal.fire({
+                    title: "Chúc mừng",
+                    text: "Bạn đã trúng: " + winningSegment.text,
+                    icon: "success",
+                });
+                StatusButton(3);
+            }
+
+            function getCookie(cname) {
+                let name = cname + "=";
+                let ca = document.cookie.split(';');
+                for (var i = 0; i < ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) == ' ') {
+                        c = c.substring(1);
+                    }
+                    if (c.indexOf(name) == 0) {
+                        return c.substring(name.length, c.length);
+                    }
+                }
+                return "";
+            }
+        </script>
+    </body>
+</html>

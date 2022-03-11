@@ -1,0 +1,80 @@
+html {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+a, a:hover {
+    text-decoration: none;
+}
+
+.mainbox {
+    position: relative;
+    padding: 20px 0;
+}
+
+#canvas {
+    display: block;
+    margin: auto;
+    border-radius: 50%;
+    background: #ccc;
+}
+
+.spin {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    box-shadow: 0px 3px 0px rgba(0, 0, 0, 0.1);
+    z-index: 99;
+    background: #fff;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    &:before {
+        content: "";
+        position: absolute;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 149px 33px 64px;
+        border-color: transparent transparent #ffffff transparent;
+        top: -178px;
+        right: 1px;
+    }
+    &:active {
+        .inner-spin {
+            box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 5px inset;
+        }
+    }
+}
+.inner-spin {
+    color: #ccc;
+    text-shadow: 0 1px 0 #fff, 0 -1px 0 rgba(0, 0, 0, 0.3);
+    width: 54px;
+    height: 54px; 
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: rgba(255, 255, 255, 1) 0px -2px 0px inset,
+        rgba(255, 255, 255, 1) 0px 2px 0px inset, rgba(0, 0, 0, 0.4) 0px 0px 5px;
+    font-size: 1.125rem;
+    z-index: 99;
+    &:hover {
+        color: #ccc;
+    }
+}
+
+.form-control {
+    width: 90%;
+    border: 1px solid #ccc;
+    padding: 8px 16px;
+    border-radius: 3px;
+}
